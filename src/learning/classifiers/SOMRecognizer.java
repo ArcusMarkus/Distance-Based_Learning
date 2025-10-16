@@ -2,12 +2,15 @@ package learning.classifiers;
 
 import core.Duple;
 import learning.core.Classifier;
+import learning.core.Histogram;
 import learning.som.SOMPoint;
 import learning.som.SelfOrgMap;
 import learning.som.WeightedAverager;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleBiFunction;
 
@@ -46,8 +49,24 @@ public class SOMRecognizer<V, L> implements Classifier<V, L> {
     // TODO: Perform a k-nearest-neighbor retrieval to return the label that
     //  best matches the current node.
     public static <V,L> L findLabelFor(V currentNode, int k, ArrayList<Duple<V, L>> allSamples, ToDoubleBiFunction<V, V> distance) {
-        // Your code here
-        return null;
+        //Keeps KNN in Priority Queue (Max)
+        PriorityQueue<Duple<Double, L>> nearestNeighbors =
+                new PriorityQueue<>(k, Comparator.comparing(Duple::getFirst, Comparator.reverseOrder()));
+        //Dist of CurrentNode -> Training Sample
+        for(Duple<V, L> sample : allSamples){
+            double dist = distance.applyAsDouble(currentNode, sample.getFirst());
+            nearestNeighbors.offer(new Duple<>(dist, sample.getSecond()));
+
+            if(nearestNeighbors.size() > k){
+                nearestNeighbors.poll();
+            }
+        }
+        //Histo of KNN
+        Histogram<L> labelHistogram = new Histogram<>();
+        for(Duple<Double, L> neighbor : nearestNeighbors) {
+            labelHistogram.bump(neighbor.getSecond());
+        }
+        return labelHistogram.getPluralityWinner();
     }
 
     @Override
