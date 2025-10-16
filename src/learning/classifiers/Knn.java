@@ -22,13 +22,29 @@ public class Knn<V, L> implements Classifier<V, L> {
 
     @Override
     public L classify(V value) {
-        // TODO: Find the distance from value to each element of data. Use Histogram.getPluralityWinner()
-        //  to find the most popular label.
-        return null;
+        //Finds Distance & K's neighbors
+        PriorityQueue<Duple<Double , L>> nearestNeighbors =
+                //Largest Dist First for because a Max-Heap
+                new PriorityQueue<>(k, Comparator.comparing(Duple::getFirst, Comparator.reverseOrder()));
+        //Calculates Distance
+        for (Duple<V, L> trainingPoint : data) {
+            double dist = distance.applyAsDouble(value, trainingPoint.getFirst());
+            nearestNeighbors.offer(new Duple<>(dist, trainingPoint.getSecond()));
+            //Keeps smallest K Distances
+            if (nearestNeighbors.size() > k){
+                nearestNeighbors.poll();
+            }
+        }
+
+        Histogram<L> neighborLabels = new Histogram<>();
+        for(Duple<Double, L> neighbor : nearestNeighbors){
+            neighborLabels.bump(neighbor.getSecond());
+        }
+        return neighborLabels.getPluralityWinner();
     }
 
     @Override
     public void train(ArrayList<Duple<V, L>> training) {
-        // TODO: Add all elements of training to data.
+        this.data = new ArrayList<>(training);
     }
 }
