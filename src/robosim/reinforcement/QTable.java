@@ -171,6 +171,7 @@ public class QTable {
             result.append('\n');
         }
         return result.toString();
+        //done
     }
 
     public double getQ(int state, int action) {
