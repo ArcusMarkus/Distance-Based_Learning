@@ -154,21 +154,19 @@ public class DTTrainer<V,L, F, FV extends Comparable<FV>> {
 		//  Use of a Histogram<L> for this purpose is recommended.
 		//  Gini coefficient is 1 - sum(for all labels i, p_i^2)
 		//  Should pass DTTest.testGini().
-		if(data.isEmpty()) return 0.0;
-
 		Histogram<L> hist = new Histogram<>();
 		for(Duple<V, L> d : data) {
 			hist.bump(d.getSecond());
 		}
 
-		double sumSq = 0.0;
+		double sumSq = 1.0;
 		int total = data.size();
 		for(L label : hist) {
 			double count = hist.getCountFor(label);
 			double p = count / total;
-			sumSq += p*p;
+			sumSq -= p*p;
 		}
-		return 1.0 - sumSq;
+		return sumSq;
 	}
 
 
